@@ -1,36 +1,45 @@
 import 'dart:async';
 import 'dart:developer';
-import 'dart:ffi';
 import 'dart:io' show Platform;
+
 import 'package:camera/camera.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
+final FirebaseAuth _auth = FirebaseAuth.instance;
+
+// Hasura / GraphQL
 final HttpLink httpLink = HttpLink(
   'https://abonelik-app.hasura.app/v1/graphql',
 );
-
 final AuthLink authLink = AuthLink(
     getToken: () async =>
         'KoplvKhAjqPNC8Ax5Odi7f1j8ZnCptKUZx0s6n2RsfoTHqzsQA8bgNGKpXOr48Us',
     headerKey: 'x-hasura-admin-secret');
-
 final Link link = authLink.concat(httpLink);
-
 var graphQLClient = GraphQLClient(
   cache: GraphQLCache(store: HiveStore()),
   link: link,
 );
-
 ValueNotifier<GraphQLClient> client = ValueNotifier(
   graphQLClient,
 );
 
 var firstCamera;
+String staticSubscriptions = """
+  query staticSubscriptions {
+    type {
+      id
+      image_url
+      name
+      price
+    }
+  }
+""";
 
 void main() async {
   await initHiveForFlutter();
@@ -43,6 +52,8 @@ void main() async {
   // Get a specific camera from the list of available cameras.
   firstCamera = cameras.last;
 
+  final _formKey = GlobalKey<FormState>();
+
   runApp(GraphQLProvider(
     client: client,
     child: MaterialApp(
@@ -50,60 +61,12 @@ void main() async {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Subscription App Home Page'),
+      home: LoginForm(formKey: _formKey),
     ),
   ));
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  final _formKey = GlobalKey<FormState>();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                  onPressed: () => {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  LoginForm(formKey: _formKey)),
-                        )
-                      },
-                  child: const Text("I'm user")),
-              ElevatedButton(
-                  onPressed: () => {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => DoorSimulation(
-                                    camera: firstCamera,
-                                  )),
-                        )
-                      },
-                  child: const Text("I'm door")),
-            ],
-          ),
-        ));
-  }
-}
-
-class LoginForm extends StatelessWidget {
+class LoginForm extends StatefulWidget {
   LoginForm({
     Key? key,
     required GlobalKey<FormState> formKey,
@@ -112,26 +75,41 @@ class LoginForm extends StatelessWidget {
 
   final GlobalKey<FormState> _formKey;
 
-  final usernameController = TextEditingController()..text = "tolgayaavuz";
-  final passwordController = TextEditingController()..text = "tolga123yavuz";
+  @override
+  State<LoginForm> createState() => _LoginFormState();
+}
 
-  // ignore: non_constant_identifier_names
-  Future<bool> Login(String username, String password) async {
-    var queryString = """
-    query BasicLogin {
-      users(where: {username: {_eq: "$username"}}) {
-        id,
-        password
+class _LoginFormState extends State<LoginForm> {
+  final emailController = TextEditingController()..text = "tolga@tolga.com";
+  final passwordController = TextEditingController()..text = "tolga123";
+
+  late bool _success;
+  late String _userEmail;
+
+  Future<bool> Login(String email, String password) async {
+    try {
+      final FirebaseUser user = (await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      ))
+          .user;
+
+      if (user != null) {
+        setState(() {
+          _success = true;
+          _userEmail = user.email;
+        });
+        log("Found User: " + user.email);
+      } else {
+        setState(() {
+          _success = false;
+        });
       }
+    } on Exception catch (_) {
+      log("User Not Found: " + email);
+      _success = false;
     }
-    """;
-    /* var result = await hasuraConnect.query(queryString); */
-
-    var result = await graphQLClient.query(QueryOptions(
-      document: gql(queryString),
-    ));
-    if (result.data?['users'].length == 0) return false;
-    return (result.data?['users'][0]['password'] == password);
+    return _success;
   }
 
   @override
@@ -144,15 +122,15 @@ class LoginForm extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Form(
-            key: _formKey,
+            key: widget._formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 TextFormField(
-                  controller: usernameController,
+                  controller: emailController,
                   decoration: const InputDecoration(
                     border: UnderlineInputBorder(),
-                    labelText: "Username",
+                    labelText: "email",
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -163,6 +141,7 @@ class LoginForm extends StatelessWidget {
                 ),
                 TextFormField(
                   controller: passwordController,
+                  obscureText: true,
                   decoration: const InputDecoration(
                     border: UnderlineInputBorder(),
                     labelText: "Password",
@@ -176,9 +155,9 @@ class LoginForm extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
+                    if (widget._formKey.currentState!.validate()) {
                       var result = await Login(
-                          usernameController.text, passwordController.text);
+                          emailController.text, passwordController.text);
                       if (result) {
                         Navigator.push(
                           context,
@@ -191,8 +170,7 @@ class LoginForm extends StatelessWidget {
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content:
-                                    Text('Invalid username or password.')));
+                                content: Text('Invalid email or password.')));
                       }
                     }
                   },
@@ -213,17 +191,6 @@ class HomePage extends StatefulWidget {
   @override
   State<HomePage> createState() => _HomePageState();
 }
-
-String staticSubscriptions = """
-  query staticSubscriptions {
-    type {
-      id
-      image_url
-      name
-      price
-    }
-  }
-""";
 
 class _HomePageState extends State<HomePage> {
   // ignore: non_constant_identifier_names
