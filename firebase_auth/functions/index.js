@@ -1,12 +1,27 @@
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-const request = require("graphql-request");
+const functions = require('firebase-functions')
+const admin = require('firebase-admin')
+const cors = require('cors')({ origin: true })
 
-const client = new request.GraphQLClient("https://abonelik-app.hasura.app/v1/graphql", {
-  headers: {
-    "content-type": "application/json",
-    "x-hasura-admin-secret": "SrD358JNlxzRhPflIvjgg1UhBGuO5Ew4bwPVYchxikrbZVNYaq2V45B8bDEr5KN9",
+admin.initializeApp(functions.config().firebase)
+
+const updateClaims = (uid) => admin.auth().setCustomUserClaims(uid, {
+  'https://hasura.io/jwt/claims': {
+    'x-hasura-default-role': 'user',
+    'x-hasura-allowed-roles': ['user'],
+    'x-hasura-user-id': uid,
   },
-});
+})
 
-admin.initializeApp(functions.config().firebase);
+exports.processSignUp = functions.auth.user().onCreate((user) => updateClaims(user.uid))
+
+exports.refreshToken = functions.https.onRequest((req, res) => {
+  console.log('TOKEN REFRESH', req.query.uid)
+  cors(req, res, () => {
+    updateClaims(req.query.uid).then(() => {
+      res.status(200).send('success')
+    }).catch((error) => {
+      console.error('REFRESH ERROR', error)
+      res.status(400).send(error)
+    })
+  })
+})

@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:async';
 import 'dart:developer';
 import 'dart:io' show Platform;
@@ -10,7 +12,7 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-final FirebaseAuth _auth = FirebaseAuth.instance;
+import 'package:client_app/api/api.dart';
 
 // Hasura / GraphQL
 final HttpLink httpLink = HttpLink(
@@ -82,35 +84,6 @@ class LoginForm extends StatefulWidget {
 class _LoginFormState extends State<LoginForm> {
   final emailController = TextEditingController()..text = "tolga@tolga.com";
   final passwordController = TextEditingController()..text = "tolga123";
-
-  late bool _success;
-  late String _userEmail;
-
-  Future<bool> Login(String email, String password) async {
-    try {
-      final FirebaseUser user = (await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      ))
-          .user;
-
-      if (user != null) {
-        setState(() {
-          _success = true;
-          _userEmail = user.email;
-        });
-        log("Found User: " + user.email);
-      } else {
-        setState(() {
-          _success = false;
-        });
-      }
-    } on Exception catch (_) {
-      log("User Not Found: " + email);
-      _success = false;
-    }
-    return _success;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -193,54 +166,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // ignore: non_constant_identifier_names
   int user_id = 1;
-
-  String GetSubscriptions(userid) {
-    return """
-      query GetSubscriptions {
-      subscriptions(where: {user: {_eq: $userid}}) {
-          id
-          subscriptionInfo {
-            id
-            image_url
-            name
-            price
-          }
-        }
-      }
-    """;
-  }
-
-  Future<Object> CheckSubscriptionValidation(
-      String subID, String userID) async {
-    try {
-      var queryString = """
-            query MyQuery {
-              subscriptions(where: {id: {_eq: $subID}, user: {_eq: $userID}}, limit: 1) {
-                id
-                valid_until
-              }
-            }
-          """;
-      var result = await graphQLClient.query(QueryOptions(
-        document: gql(queryString),
-      ));
-      if (result.data?['subscriptions'].length == 0) {
-        return {"openDoor": false, "validUntil": ""};
-      } else {
-        var subData = result.data?['subscriptions'][0];
-        var validUntil = subData['valid_until'];
-        log('validUntil: $validUntil');
-        var currentDate = DateTime.now();
-        var openDoor = DateTime.parse(validUntil).millisecondsSinceEpoch >
-            currentDate.millisecondsSinceEpoch;
-        return {"openDoor": openDoor, "validUntil": validUntil};
-      }
-    } on Exception {
-      return {"openDoor": false, "validUntil": ""};
-    }
-  }
 
   GenerateQRCode(int SubscriptionID, int userID) async {
     var subData = await CheckSubscriptionValidation(
@@ -249,6 +175,7 @@ class _HomePageState extends State<HomePage> {
     var openDoor = subData["openDoor"];
     var validUntil = subData["validUntil"];
     var qrData = '$SubscriptionID:$userID:$openDoor:$validUntil';
+
     // TODO: Encrypt qrData before creating QR-Code.
     log('data: $qrData');
     Navigator.push(
@@ -265,8 +192,7 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Query(
         options: QueryOptions(
-          document:
-              true ? gql(GetSubscriptions(user_id)) : gql(staticSubscriptions),
+          document: true ? GetSubscriptions(user_id) : gql(staticSubscriptions),
           pollInterval: const Duration(seconds: 10),
         ),
         builder: (QueryResult result,
@@ -390,37 +316,6 @@ class _DoorSimulationState extends State<DoorSimulation> {
   }
 
   // ignore: non_constant_identifier_names
-  Future<String> CheckSubscriptionValidation(String? data) async {
-    try {
-      List<String>? splitData = data?.split(":");
-      if (splitData != null && splitData.length > 1) {
-        String subID = splitData[0];
-        String userID = splitData[1];
-
-        var queryString = """
-          query MyQuery {
-            subscriptions(where: {id: {_eq: $subID}, user: {_eq: $userID}}, limit: 1) {
-              id
-              valid_until
-            }
-          }
-        """;
-        var result = await graphQLClient.query(QueryOptions(
-          document: gql(queryString),
-        ));
-        if (result.data?['subscriptions'].length == 0) {
-          return "Subscription not found.";
-        } else {
-          var subData = result.data?['subscriptions'][0];
-          return "Valid Until: " + subData['valid_until'];
-        }
-      } else {
-        return "Subscription date is invalid.";
-      }
-    } on Exception {
-      return "QR Code is invalid.";
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -452,7 +347,8 @@ class _DoorSimulationState extends State<DoorSimulation> {
               child: Center(
                   child: result != null
                       ? FutureBuilder(
-                          future: CheckSubscriptionValidation(result!.code),
+                          future:
+                              CheckSubscriptionValidationString(result!.code),
                           builder: (BuildContext context,
                               AsyncSnapshot<dynamic> snapshot) {
                             return Text(
