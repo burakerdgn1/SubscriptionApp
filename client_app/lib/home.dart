@@ -63,7 +63,7 @@ class _TestState extends State<HomePage> {
               );
             } else if (value == 1) {
               Navigator.pop(context);
-              LogOut().then((value) => Navigator.pushReplacement(
+              LogOut().then((value) => Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => LoginPage(formKey: _formKey)),

@@ -1,10 +1,19 @@
+// ignore_for_file: avoid_returning_null_for_void
+
 import 'dart:ffi';
 
+import 'package:client_app/login.dart';
 import 'package:flutter/material.dart';
+import 'api/api.dart';
 
-class Register extends StatelessWidget {
+class Register extends StatefulWidget {
   const Register({Key? key}) : super(key: key);
 
+  @override
+  State<Register> createState() => _RegisterState();
+}
+
+class _RegisterState extends State<Register> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -12,7 +21,7 @@ class Register extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Register"),
       ),
-      body: Container(
+      body: SizedBox(
         height: size.height,
         width: double.infinity,
         child: Column(
@@ -33,78 +42,93 @@ class Register extends StatelessWidget {
             Column(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
               Container(
                 alignment: Alignment.center,
-                margin: EdgeInsets.symmetric(horizontal: 60),
+                margin: const EdgeInsets.symmetric(horizontal: 60),
                 decoration: BoxDecoration(
                   border: Border.all(),
                   borderRadius: BorderRadius.circular(5),
                 ),
-                child: TextField(),
+                child: const TextField(),
               ),
-              Text("Name"),
-              SizedBox(height: 10),
+              const Text("Name"),
+              const SizedBox(height: 10),
               Container(
                 alignment: Alignment.center,
-                margin: EdgeInsets.symmetric(horizontal: 60),
+                margin: const EdgeInsets.symmetric(horizontal: 60),
                 decoration: BoxDecoration(
                   border: Border.all(),
                   borderRadius: BorderRadius.circular(5),
                 ),
-                child: TextField(),
+                child: const TextField(),
               ),
-              Text("Username"),
-              SizedBox(height: 10),
+              const Text("Username"),
+              const SizedBox(height: 10),
               Container(
                 alignment: Alignment.center,
-                margin: EdgeInsets.symmetric(horizontal: 60),
+                margin: const EdgeInsets.symmetric(horizontal: 60),
                 decoration: BoxDecoration(
                   border: Border.all(),
                   borderRadius: BorderRadius.circular(5),
                 ),
-                child: TextField(),
+                child: const TextField(),
               ),
-              Text("Email"),
-              SizedBox(height: 10),
+              const Text("Email"),
+              const SizedBox(height: 10),
               Container(
                 alignment: Alignment.center,
-                margin: EdgeInsets.symmetric(horizontal: 60),
+                margin: const EdgeInsets.symmetric(horizontal: 60),
                 decoration: BoxDecoration(
                   border: Border.all(),
                   borderRadius: BorderRadius.circular(5),
                 ),
-                child: TextField(
+                child: const TextField(
                   obscureText: true,
                 ),
               ),
-              Text("Password"),
-              SizedBox(height: 10),
+              const Text("Password"),
+              const SizedBox(height: 10),
               Container(
                 alignment: Alignment.center,
-                margin: EdgeInsets.symmetric(horizontal: 60),
+                margin: const EdgeInsets.symmetric(horizontal: 60),
                 decoration: BoxDecoration(
                   border: Border.all(),
                   borderRadius: BorderRadius.circular(5),
                 ),
-                child: TextField(
+                child: const TextField(
                   obscureText: true,
                 ),
               ),
-              Text("Password Again"),
+              const Text("Password Again"),
             ]),
             Container(
               alignment: Alignment.bottomCenter,
               child: ElevatedButton(
                 child: Text("Register".toUpperCase(),
-                    style: TextStyle(fontSize: 14)),
+                    style: const TextStyle(fontSize: 14)),
                 style: ButtonStyle(
                     foregroundColor:
                         MaterialStateProperty.all<Color>(Colors.white),
                     backgroundColor:
                         MaterialStateProperty.all<Color>(Colors.red),
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
+                        const RoundedRectangleBorder(
                             borderRadius: BorderRadius.zero,
                             side: BorderSide(color: Colors.red)))),
-                onPressed: () => null,
+                onPressed: () async {
+                  var result = true; //await RegisterUser();
+                  if (result) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              LoginPage(formKey: GlobalKey<FormState>())),
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("Registered successfully.")));
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Can't register.")));
+                  }
+                },
               ),
             )
           ],
