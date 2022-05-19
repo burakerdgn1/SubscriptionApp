@@ -1,47 +1,15 @@
 // ignore_for_file: non_constant_identifier_names
 
-import 'dart:async';
-import 'dart:developer';
-import 'dart:io' show Platform;
-
 import 'package:camera/camera.dart';
+import 'package:client_app/home.dart';
 import 'package:flutter/material.dart';
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import './api/api.dart';
 
-import 'package:client_app/api/api.dart';
-
-// Hasura / GraphQL
-final HttpLink httpLink = HttpLink(
-  'https://abonelik-app.hasura.app/v1/graphql',
-);
-final AuthLink authLink = AuthLink(
-    getToken: () async =>
-        'KoplvKhAjqPNC8Ax5Odi7f1j8ZnCptKUZx0s6n2RsfoTHqzsQA8bgNGKpXOr48Us',
-    headerKey: 'x-hasura-admin-secret');
-final Link link = authLink.concat(httpLink);
-var graphQLClient = GraphQLClient(
-  cache: GraphQLCache(store: HiveStore()),
-  link: link,
-);
-ValueNotifier<GraphQLClient> client = ValueNotifier(
-  graphQLClient,
-);
+import './login.dart';
 
 var firstCamera;
-String staticSubscriptions = """
-  query staticSubscriptions {
-    type {
-      id
-      image_url
-      name
-      price
-    }
-  }
-""";
 
 void main() async {
   await initHiveForFlutter();
@@ -63,11 +31,13 @@ void main() async {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: LoginForm(formKey: _formKey),
+      //home: LoginForm(formKey: _formKey),
+      home:
+          await IsLoggedIn() ? const HomePage() : LoginPage(formKey: _formKey),
     ),
   ));
 }
-
+/* 
 class LoginForm extends StatefulWidget {
   LoginForm({
     Key? key,
@@ -362,3 +332,4 @@ class _DoorSimulationState extends State<DoorSimulation> {
     );
   }
 }
+ */

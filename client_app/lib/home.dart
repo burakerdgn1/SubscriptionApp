@@ -1,20 +1,22 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, unnecessary_new
 
-
 import 'package:flutter/material.dart';
-import 'package:qrcode_generator/product_detail.dart';
-import 'package:qrcode_generator/login.dart';
+import './product_detail.dart';
+import './login.dart';
+import 'api/api.dart';
 
 import '../settings.dart';
 
-class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+final _formKey = GlobalKey<FormState>();
+
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
 
   @override
-  State<Home> createState() => _TestState();
+  State<HomePage> createState() => _TestState();
 }
 
-class _TestState extends State<Home> {
+class _TestState extends State<HomePage> {
   int _currentIndex = 0;
 
   final tabs = <Widget>[
@@ -39,7 +41,6 @@ class _TestState extends State<Home> {
       appBar: AppBar(
         title: const Text("Home"),
         actions: <Widget>[
-          
           PopupMenuButton(
               // add icon, by default "3 dot" icon
               // icon: Icon(Icons.book)
@@ -53,7 +54,6 @@ class _TestState extends State<Home> {
                 value: 1,
                 child: Text("Logout"),
               ),
-              
             ];
           }, onSelected: (value) {
             if (value == 0) {
@@ -63,10 +63,11 @@ class _TestState extends State<Home> {
               );
             } else if (value == 1) {
               Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Login()),
-              );
+              LogOut().then((value) => Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => LoginPage(formKey: _formKey)),
+                  ));
             }
           }),
         ],
@@ -167,22 +168,22 @@ class _TestState extends State<Home> {
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            title: Text("Home"),
+            label: "Home",
             backgroundColor: Colors.blue,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.event_note_outlined),
-            title: Text("New"),
+            label: "New",
             backgroundColor: Colors.blue,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.cancel_presentation_sharp),
-            title: Text("X"),
+            label: "X",
             backgroundColor: Colors.blue,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart),
-            title: Text("Shop"),
+            label: "Shop",
             backgroundColor: Colors.blue,
           ),
         ],

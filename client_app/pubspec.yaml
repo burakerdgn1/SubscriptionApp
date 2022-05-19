@@ -43,7 +43,7 @@ dependencies:
   syncfusion_flutter_charts: ^20.1.51
   fl_chart: ^0.50.1
   table_calendar: ^2.2.1
-  shared_preferences: ^0.5.4+5
+  shared_preferences: ^2.0.15
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -60,9 +60,9 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^1.0.0
   flutter_icons: ^1.1.0
-  page_transition: ^1.1.7+6
-  animated_bottom_navigation_bar: ^0.2.1
-  percent_indicator: "^2.1.7+2"
+  page_transition: ^2.0.5
+  animated_bottom_navigation_bar: ^0.3.2
+  percent_indicator: ^4.2.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

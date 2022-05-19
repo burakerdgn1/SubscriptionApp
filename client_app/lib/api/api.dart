@@ -1,10 +1,12 @@
 // ignore: import_of_legacy_library_into_null_safe
 // ignore_for_file: non_constant_identifier_names
 
+import 'dart:convert';
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 //Hasura
 final HttpLink httpLink = HttpLink(
@@ -22,6 +24,17 @@ var graphQLClient = GraphQLClient(
 ValueNotifier<GraphQLClient> client = ValueNotifier(
   graphQLClient,
 );
+
+String staticSubscriptions = """
+  query staticSubscriptions {
+    type {
+      id
+      image_url
+      name
+      price
+    }
+  }
+""";
 
 // --- Functions ---
 GetSubscriptions(UserID) {
@@ -166,7 +179,29 @@ Future<bool> Login(String email, String password) async {
     ))
             .user;
     log("Found User: " + user.email);
-    return true;
+    var emailAddress = user.email;
+    var queryString = """
+              query MyQuery {
+                users(where: {emailAddress: {_eq: "tolga@tolga.com"}}) {
+                  registerDate
+                  id
+                  emailAddress
+                  username
+                }
+              }
+          """;
+    var result = await graphQLClient.query(QueryOptions(
+      document: gql(queryString),
+    ));
+    if (result.data?['users'].length == 0) {
+      return false;
+    } else {
+      var userData = result.data?['users'][0];
+      log(userData['id'].toString());
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setInt("userID", userData['id']);
+      return true;
+    }
   } on Exception catch (_) {
     log("User Not Found: " + email);
     return false;
@@ -174,5 +209,14 @@ Future<bool> Login(String email, String password) async {
 }
 
 Future<bool> IsLoggedIn() async {
-  return await FirebaseAuth.instance.currentUser() != null;
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  var currentUser = await FirebaseAuth.instance.currentUser() != null;
+  return currentUser && prefs.getInt("userID") != -1;
+}
+
+Future<bool> LogOut() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setInt("userID", -1);
+  await FirebaseAuth.instance.signOut();
+  return true;
 }

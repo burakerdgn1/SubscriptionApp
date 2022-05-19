@@ -1,8 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
-
 import 'package:flutter/material.dart';
-import 'package:qrcode_generator/calendar.dart';
+import './calendar.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class ReportPage extends StatefulWidget {
@@ -56,7 +55,6 @@ class _ReportPageState extends State<ReportPage> {
               alignment: Alignment.centerLeft,
             ),
             ListTile(
-              
               title: Text(
                 'Activity 1',
                 textScaleFactor: 1.5,
@@ -64,7 +62,6 @@ class _ReportPageState extends State<ReportPage> {
               trailing: Icon(Icons.menu),
               subtitle: Text('About activity 1'),
               selected: true,
-              
             ),
             ListTile(
               title: Text(
