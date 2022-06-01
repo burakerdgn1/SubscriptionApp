@@ -116,7 +116,7 @@ Future<Object> CheckSubscriptionValidation(String subID, String userID) async {
       return {"openDoor": openDoor, "validUntil": validUntil};
     }
   } on Exception {
-    return {"openDoor": false, "validUntil": ""};
+    return {"openDoor": false, "validUntil": "null"};
   }
 }
 

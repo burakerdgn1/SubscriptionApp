@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../api/api.dart';
 
 // ignore: non_constant_identifier_names
-GenerateQRCode(int SubscriptionID, int userID) async {
+Future<String> GenerateQRCode(int SubscriptionID, int userID) async {
   var subData = await CheckSubscriptionValidation(
       SubscriptionID.toString(), userID.toString()) as Map;
 

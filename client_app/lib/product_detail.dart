@@ -1,7 +1,11 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, prefer_const_constructors_in_immutables
 
+import 'package:client_app/qrcodepage.dart';
 import 'package:flutter/material.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+
+import 'functions/qr_funcs.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final dynamic subscription;
@@ -39,6 +43,20 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               children: <Widget>[
                 _buildProductImagesWidgets(),
                 _buildProductTitleWidget(),
+                SizedBox(height: 12.0),
+                Center(
+                    child: ElevatedButton(
+                        onPressed: () => {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => QRCodePage(
+                                        GenerateQRCode(
+                                            widget.subscription["id"],
+                                            GetStorage().read("userID")))),
+                              )
+                            },
+                        child: Text("QR Code"))),
                 SizedBox(height: 12.0),
                 _buildPriceWidgets(),
                 SizedBox(height: 12.0),
