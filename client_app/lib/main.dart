@@ -3,6 +3,7 @@
 import 'package:camera/camera.dart';
 import 'package:client_app/home.dart';
 import 'package:flutter/material.dart';
+import 'package:get_storage/get_storage.dart';
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:graphql_flutter/graphql_flutter.dart';
 import './api/api.dart';
@@ -13,6 +14,7 @@ var firstCamera;
 
 void main() async {
   await initHiveForFlutter();
+  await GetStorage.init();
 
   WidgetsFlutterBinding.ensureInitialized();
 

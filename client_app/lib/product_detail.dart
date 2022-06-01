@@ -1,8 +1,12 @@
-// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
+// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, prefer_const_constructors_in_immutables
 
 import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 
 class ProductDetailPage extends StatefulWidget {
+  final dynamic subscription;
+  ProductDetailPage(this.subscription, {Key? key}) : super(key: key);
+
   @override
   _ProductDetailPageState createState() => _ProductDetailPageState();
 }
@@ -90,13 +94,13 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   controller: imagesController,
                   children: <Widget>[
                     Image.network(
-                      'https://www.gordion-avm.com/media/image/BQQ8S9MXP92QF4.png',
+                      widget.subscription["image_url"],
                     ),
                     Image.network(
-                      'https://www.gordion-avm.com/media/image/BQQ8S9MXP92QF4.png',
+                      widget.subscription["image_url"],
                     ),
                     Image.network(
-                      'https://www.gordion-avm.com/media/image/BQQ8S9MXP92QF4.png',
+                      widget.subscription["image_url"],
                     ),
                   ],
                 ),
@@ -122,7 +126,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       child: Center(
         child: Text(
           //name,
-          "MacFit",
+          widget.subscription["name"],
           style: TextStyle(fontSize: 16.0, color: Colors.black),
         ),
       ),
@@ -137,7 +141,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         mainAxisSize: MainAxisSize.max,
         children: <Widget>[
           Text(
-            "\$150/month",
+            widget.subscription["price"].toString() + " TRY/month",
             style: TextStyle(fontSize: 16.0, color: Colors.black),
           ),
           SizedBox(
@@ -164,7 +168,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             width: 12.0,
           ),
           Text(
-            "Gym/Physical Fitness Center",
+            widget.subscription["serviceType"],
             style: TextStyle(
               color: Colors.grey[600],
             ),
