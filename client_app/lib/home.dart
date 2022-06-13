@@ -1,6 +1,8 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, unnecessary_new
 
 import 'package:flutter/material.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import './product_detail.dart';
 import './login.dart';
 import 'api/api.dart';
@@ -98,52 +100,71 @@ class _TestState extends State<HomePage> {
               height: 250.0,
               width: double.infinity,
               margin: EdgeInsets.all(5),
-              child: new ListView.builder(
-                scrollDirection: Axis.vertical,
-                itemCount: 10,
-                itemBuilder: (BuildContext ctxt, int index) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
-                          'https://www.gordion-avm.com/media/image/BQQ8S9MXP92QF4.png',
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () => {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ProductDetailPage()),
-                          ),
-                        },
-                        child: Container(
-                          child: Column(
+              child: Query(
+                options: QueryOptions(
+                  document: GetSubscriptions(GetStorage().read("userID")),
+                ),
+                builder: (QueryResult result,
+                    {VoidCallback? refetch, FetchMore? fetchMore}) {
+                  if (result.hasException) {
+                    return Text(result.exception.toString());
+                  }
+
+                  if (result.isLoading) {
+                    return const Text('Loading');
+                  }
+
+                  List subscriptions = result.data?['subscriptions'];
+
+                  return ListView.builder(
+                      itemCount: subscriptions.length,
+                      itemBuilder: (context, index) {
+                        final subscription =
+                            subscriptions[index]['subscriptionInfo'][0];
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text("Macfit"),
-                              Text("Gym "),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.network(
+                                  subscription['image_url'],
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                              Container(
+                                child: Column(
+                                  children: [
+                                    Text(subscription['name']),
+                                    Text("Gym "),
+                                  ],
+                                ),
+                              ),
+                              ElevatedButton(
+                                child: const Text(
+                                  'i',
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            ProductDetailPage(subscription)),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  fixedSize: const Size(40, 40),
+                                  shape: const CircleBorder(),
+                                ),
+                              ),
                             ],
                           ),
-                        ),
-                      ),
-                      ElevatedButton(
-                        child: const Text(
-                          'x',
-                          style: TextStyle(fontSize: 20),
-                        ),
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          fixedSize: const Size(40, 40),
-                          shape: const CircleBorder(),
-                        ),
-                      ),
-                    ],
-                  );
+                        );
+                      });
                 },
               ),
             ),
