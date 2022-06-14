@@ -5,8 +5,8 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 //Hasura
 final HttpLink httpLink = HttpLink(
@@ -42,11 +42,17 @@ GetSubscriptions(UserID) {
       query GetSubscriptions {
       subscriptions(where: {user: {_eq: $UserID}}) {
           id
+          created_at
+          valid_until
           subscriptionInfo {
             id
             image_url
             name
             price
+            serviceType
+            address
+            details
+            contact
           }
         }
       }
@@ -110,7 +116,7 @@ Future<Object> CheckSubscriptionValidation(String subID, String userID) async {
       return {"openDoor": openDoor, "validUntil": validUntil};
     }
   } on Exception {
-    return {"openDoor": false, "validUntil": ""};
+    return {"openDoor": false, "validUntil": "null"};
   }
 }
 
@@ -182,7 +188,7 @@ Future<bool> Login(String email, String password) async {
     var emailAddress = user.email;
     var queryString = """
               query MyQuery {
-                users(where: {emailAddress: {_eq: "tolga@tolga.com"}}) {
+                users(where: {emailAddress: {_eq: "$email"}}) {
                   registerDate
                   id
                   emailAddress
@@ -198,8 +204,7 @@ Future<bool> Login(String email, String password) async {
     } else {
       var userData = result.data?['users'][0];
       log(userData['id'].toString());
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setInt("userID", userData['id']);
+      GetStorage().write("userID", userData['id']);
       return true;
     }
   } on Exception catch (_) {
@@ -209,14 +214,12 @@ Future<bool> Login(String email, String password) async {
 }
 
 Future<bool> IsLoggedIn() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
   var currentUser = await FirebaseAuth.instance.currentUser() != null;
-  return currentUser && prefs.getInt("userID") != -1;
+  return currentUser && GetStorage().read("userID") != -1;
 }
 
 Future<bool> LogOut() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  prefs.setInt("userID", -1);
+  GetStorage().write("userID", -1);
   await FirebaseAuth.instance.signOut();
   return true;
 }
