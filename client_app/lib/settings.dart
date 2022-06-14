@@ -1,3 +1,4 @@
+import 'package:client_app/account_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 
@@ -22,12 +23,9 @@ class _SettingsState extends State<Settings> {
         title: Text("Settings"),
       ),
       body: SettingsList(
-        
         sections: [
           SettingsSection(
-            
             titlePadding: EdgeInsets.all(15),
-            
             title: 'General',
             tiles: [
               SettingsTile(
@@ -40,9 +38,15 @@ class _SettingsState extends State<Settings> {
                 title: 'Account Settings',
                 subtitle: 'Change Password etc.',
                 leading: Icon(Icons.account_box),
-                onPressed: (BuildContext context) {},
+                onPressed: (context) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const EditProfilePage(),
+                    ),
+                  );
+                },
               ),
-              
               SettingsTile.switchTile(
                 title: 'Setting1',
                 leading: Icon(Icons.phone_android),
@@ -64,7 +68,6 @@ class _SettingsState extends State<Settings> {
                 },
               ),
               SettingsTile.switchTile(
-                
                 title: 'Setting3',
                 leading: Icon(Icons.phone_android),
                 switchValue: isSwitchedSetting3,
@@ -90,7 +93,6 @@ class _SettingsState extends State<Settings> {
                 leading: Icon(Icons.feedback),
                 onPressed: (BuildContext context) {},
               ),
-              
             ],
           ),
         ],
