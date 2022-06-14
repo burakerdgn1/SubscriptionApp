@@ -9,8 +9,6 @@ class LoginWithEmailAndPasswordEvent extends AuthenticationEvent {
   LoginWithEmailAndPasswordEvent({required this.email, required this.password});
 }
 
-class LoginWithFacebookEvent extends AuthenticationEvent {}
-
 class LoginWithAppleEvent extends AuthenticationEvent {}
 
 class LoginWithPhoneNumberEvent extends AuthenticationEvent {
