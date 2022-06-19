@@ -1,11 +1,17 @@
 // ignore_for_file: non_constant_identifier_names
 
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:client_app/home.dart';
+import 'package:client_app/product_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import './api/api.dart';
 
 import './login.dart';
@@ -27,19 +33,18 @@ void main() async {
   final _formKey = GlobalKey<FormState>();
 
   runApp(GraphQLProvider(
-    client: client,
-    child: MaterialApp(
-      title: 'Subscription App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      //home: LoginForm(formKey: _formKey),
-      home:
-          await IsLoggedIn() ? const HomePage() : LoginPage(formKey: _formKey),
-    ),
-  ));
+      client: client,
+      child: MaterialApp(
+        title: 'Subscription App',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: await IsLoggedIn()
+            ? const HomePage()
+            : LoginPage(formKey: _formKey),
+      )));
 }
-/* 
+/*
 class LoginForm extends StatefulWidget {
   LoginForm({
     Key? key,
@@ -334,4 +339,4 @@ class _DoorSimulationState extends State<DoorSimulation> {
     );
   }
 }
- */
+*/

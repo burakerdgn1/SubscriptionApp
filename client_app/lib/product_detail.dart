@@ -4,6 +4,7 @@ import 'package:client_app/qrcodepage.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import './api/api.dart';
 
 import 'functions/qr_funcs.dart';
 

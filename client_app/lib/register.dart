@@ -1,7 +1,5 @@
 // ignore_for_file: avoid_returning_null_for_void, unnecessary_new, unused_field
 
-import 'dart:ffi';
-
 import 'package:client_app/login.dart';
 import 'package:flutter/material.dart';
 import 'api/api.dart';
@@ -87,17 +85,19 @@ class _RegisterState extends State<Register> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text("Register"),
       ),
       body: Form(
         key: _key,
-        child: SizedBox(
-          height: size.height,
-          width: double.infinity,
+        child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
+              SizedBox(
+                height: 40,
+              ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: ClipRRect(
@@ -135,7 +135,6 @@ class _RegisterState extends State<Register> {
                           ),
                         ),
                         keyboardType: TextInputType.emailAddress,
-                        
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -161,7 +160,6 @@ class _RegisterState extends State<Register> {
                           ),
                         ),
                         keyboardType: TextInputType.name,
-                        
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -189,7 +187,6 @@ class _RegisterState extends State<Register> {
                           ),
                         ),
                         keyboardType: TextInputType.emailAddress,
-                        
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -219,7 +216,6 @@ class _RegisterState extends State<Register> {
                           ),
                         ),
                         keyboardType: TextInputType.visiblePassword,
-
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -244,43 +240,39 @@ class _RegisterState extends State<Register> {
                           ),
                         ),
                         keyboardType: TextInputType.emailAddress,
-                        
                       ),
                     ),
                     const SizedBox(height: 20),
                   ]),
-              Container(
-                alignment: Alignment.bottomCenter,
-                child: ElevatedButton(
-                  child: Text("Register".toUpperCase(),
-                      style: const TextStyle(fontSize: 14)),
-                  style: ButtonStyle(
-                      foregroundColor:
-                          MaterialStateProperty.all<Color>(Colors.white),
-                      backgroundColor:
-                          MaterialStateProperty.all<Color>(Colors.red),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                          const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.zero,
-                              side: BorderSide(color: Colors.red)))),
-                  onPressed: () async {
-                    if (_key.currentState!.validate()) {
-                      var result = true; //await RegisterUser();
-                      if (result) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  LoginPage(formKey: GlobalKey<FormState>())),
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text("Registered successfully.")));
-                      }
+              ElevatedButton(
+                child: Text("Register".toUpperCase(),
+                    style: const TextStyle(fontSize: 14)),
+                style: ButtonStyle(
+                    foregroundColor:
+                        MaterialStateProperty.all<Color>(Colors.white),
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(Colors.red),
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero,
+                            side: BorderSide(color: Colors.red)))),
+                onPressed: () async {
+                  if (_key.currentState!.validate()) {
+                    var result = await RegisterUser(_emailController.text,
+                        _userNameController.text, _passwordController.text);
+                    if (result) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                LoginPage(formKey: GlobalKey<FormState>())),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text("Registered successfully.")));
                     }
-                  },
-                ),
-              )
+                  }
+                },
+              ),
             ],
           ),
         ),

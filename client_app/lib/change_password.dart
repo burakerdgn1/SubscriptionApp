@@ -1,13 +1,12 @@
 import 'package:client_app/account_settings.dart';
 import 'package:flutter/material.dart';
+import 'api/api.dart';
+import 'package:get_storage/get_storage.dart';
 
 class ChangePassword extends StatefulWidget {
   const ChangePassword({
     Key? key,
-    required GlobalKey<FormState> formKey,
-  })  : _formKey = formKey,
-        super(key: key);
-  final GlobalKey<FormState> _formKey;
+  }) : super(key: key);
 
   @override
   State<ChangePassword> createState() => _ChangePasswordState();
@@ -18,6 +17,8 @@ class _ChangePasswordState extends State<ChangePassword> {
   final TextEditingController _passwordController = new TextEditingController();
   final TextEditingController _confirmPasswordController =
       new TextEditingController();
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -107,9 +108,12 @@ class _ChangePasswordState extends State<ChangePassword> {
                 child: RaisedButton(
                   onPressed: () async {
                     if (_key.currentState!.validate()) {
-                      var result = true;
+                      final bool result = await UpdatePassword(
+                          GetStorage().read("userID"),
+                          _passwordController.text);
                       if (result) {
-                        Navigator.pop(context);
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => EditProfilePage()));
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text("Password Changed."),

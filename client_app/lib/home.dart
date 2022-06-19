@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, unnecessary_new
 
+import 'package:client_app/all_subscriptions.dart';
+import 'package:client_app/calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -22,17 +24,13 @@ class _TestState extends State<HomePage> {
   int _currentIndex = 0;
 
   final tabs = <Widget>[
-    Center(
-      child: Text("Home"),
-    ),
-    Center(
-      child: Text("Subs"),
-    ),
+    Home2(),
+    Calendar(),
     Center(
       child: Text(""),
     ),
     Center(
-      child: Text("Shop"),
+      child: Text(""),
     ),
   ];
 
@@ -74,114 +72,7 @@ class _TestState extends State<HomePage> {
           }),
         ],
       ),
-      body: //tabs[_currentIndex]
-          Container(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(150),
-                    child: Image.network(
-                      'https://cdn2.iconfinder.com/data/icons/random-outline-3/48/random_14-512.png',
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Container(
-              height: 250.0,
-              width: double.infinity,
-              margin: EdgeInsets.all(5),
-              child: Query(
-                options: QueryOptions(
-                  document: GetSubscriptions(GetStorage().read("userID")),
-                ),
-                builder: (QueryResult result,
-                    {VoidCallback? refetch, FetchMore? fetchMore}) {
-                  if (result.hasException) {
-                    return Text(result.exception.toString());
-                  }
-
-                  if (result.isLoading) {
-                    return const Text('Loading');
-                  }
-
-                  List subscriptions = result.data?['subscriptions'];
-
-                  return ListView.builder(
-                      itemCount: subscriptions.length,
-                      itemBuilder: (context, index) {
-                        final subscription =
-                            subscriptions[index]['subscriptionInfo'][0];
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.network(
-                                  subscription['image_url'],
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                              Container(
-                                child: Column(
-                                  children: [
-                                    Text(subscription['name']),
-                                    Text("Gym "),
-                                  ],
-                                ),
-                              ),
-                              ElevatedButton(
-                                child: const Text(
-                                  'i',
-                                  style: TextStyle(fontSize: 20),
-                                ),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            ProductDetailPage(subscription)),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  fixedSize: const Size(40, 40),
-                                  shape: const CircleBorder(),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      });
-                },
-              ),
-            ),
-            ElevatedButton(
-              child: const Text(
-                '+',
-                style: TextStyle(fontSize: 24),
-              ),
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                fixedSize: const Size(60, 60),
-                shape: const CircleBorder(),
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: tabs[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         iconSize: 30,
@@ -194,7 +85,7 @@ class _TestState extends State<HomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.event_note_outlined),
-            label: "New",
+            label: "Calendar",
             backgroundColor: Colors.blue,
           ),
           BottomNavigationBarItem(
@@ -214,6 +105,201 @@ class _TestState extends State<HomePage> {
           });
         },
       ),
+    );
+  }
+}
+
+class Home2 extends StatefulWidget {
+  const Home2({Key? key}) : super(key: key);
+
+  @override
+  State<Home2> createState() => _Home2State();
+}
+
+class _Home2State extends State<Home2> {
+  @override
+  Widget build(BuildContext context) {
+    DateTime now = DateTime.now();
+    DateTime day2later = DateTime(now.year, now.month, now.day + 5);
+    print(day2later);
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        color: Colors.red,
+                        height: 10,
+                        width: 10,
+                      ),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Text("Subscription is expired")
+                    ],
+                  ),
+                  SizedBox(
+                    height: 5,
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        color: Colors.yellow,
+                        height: 10,
+                        width: 10,
+                      ),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Text("Subscription will expire in -- days")
+                    ],
+                  )
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(150),
+                child: Image.network(
+                  'https://cdn2.iconfinder.com/data/icons/random-outline-3/48/random_14-512.png',
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ],
+        ),
+        Expanded(
+          child: Container(
+            margin: EdgeInsets.all(5),
+            child: Subscription(
+              options: SubscriptionOptions(
+                document: GetSubscriptions(GetStorage().read("userID")),
+              ),
+              builder: (QueryResult result,
+                  {VoidCallback? refetch, FetchMore? fetchMore}) {
+                if (result.hasException) {
+                  return Text(result.exception.toString());
+                }
+
+                if (result.isLoading) {
+                  return Center(child: const Text('Loading'));
+                }
+
+                List subscriptions = result.data?['subscriptions'];
+
+                return ListView.builder(
+                    itemCount: subscriptions.length,
+                    itemBuilder: (context, index) {
+                      final subscription =
+                          subscriptions[index]['subscriptionInfo'][0];
+
+                      final DateTime validUntil =
+                          DateTime.parse(subscriptions[index]["valid_until"]);
+
+                      final dayLeft =
+                          validUntil.difference(DateTime.now()).inDays;
+
+                      return Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            (dayLeft <= 0)
+                                ? Container(
+                                    width: 20,
+                                    color: Colors.red,
+                                    height: 40,
+                                  )
+                                : ((dayLeft <= 10)
+                                    ? Container(
+                                        width: 20,
+                                        height: 40,
+                                        color: Colors.yellow,
+                                        child: Center(
+                                          child: RotationTransition(
+                                            turns: new AlwaysStoppedAnimation(
+                                                270 / 360),
+                                            child: Text(dayLeft.toString()),
+                                          ),
+                                        ),
+                                      )
+                                    : Container(
+                                        height: 0,
+                                        width: 0,
+                                      )),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.network(
+                                subscription['image_url'],
+                                width: 50,
+                                height: 50,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                            Container(
+                              child: Column(
+                                children: [
+                                  Text(subscription['name']),
+                                  Text(subscription['serviceType']),
+                                ],
+                              ),
+                            ),
+                            ElevatedButton(
+                              child: const Text(
+                                'i',
+                                style: TextStyle(fontSize: 20),
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          ProductDetailPage(subscription)),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                fixedSize: const Size(40, 40),
+                                shape: const CircleBorder(),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    });
+              },
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: ElevatedButton(
+            child: const Text(
+              '+',
+              style: TextStyle(fontSize: 24),
+            ),
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => AllSubscriptions()));
+            },
+            style: ElevatedButton.styleFrom(
+              fixedSize: const Size(60, 60),
+              shape: const CircleBorder(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
