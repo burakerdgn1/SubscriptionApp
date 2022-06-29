@@ -1,9 +1,7 @@
-import 'dart:convert';
 import 'package:client_app/api/api.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class Calendar extends StatefulWidget {
@@ -115,7 +113,7 @@ class _CalendarState extends State<Calendar> {
                           icon: Icon(Icons.chevron_left)),
                       Center(
                         child: Text(
-                          toMonthName(now.month),
+                          toMonthName(now.month) + " " + now.year.toString(),
                         ),
                       ),
                       IconButton(

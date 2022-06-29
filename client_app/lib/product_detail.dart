@@ -3,14 +3,14 @@
 import 'package:client_app/qrcodepage.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import './api/api.dart';
 
 import 'functions/qr_funcs.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final dynamic subscription;
-  ProductDetailPage(this.subscription, {Key? key}) : super(key: key);
+  final dynamic valid_day;
+  ProductDetailPage(this.subscription, this.valid_day, {Key? key})
+      : super(key: key);
 
   @override
   _ProductDetailPageState createState() => _ProductDetailPageState();
@@ -25,6 +25,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         title: Text(
           "View Subscription",
         ),
+        centerTitle: true,
       ),
       body: _buildProductDetailsPage(context),
     );
@@ -58,6 +59,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                               )
                             },
                         child: Text("QR Code"))),
+                SizedBox(height: 12.0),
+                _dayUntil(),
                 SizedBox(height: 12.0),
                 _buildPriceWidgets(),
                 SizedBox(height: 12.0),
@@ -190,6 +193,33 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             widget.subscription["serviceType"],
             style: TextStyle(
               color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  _dayUntil() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      child: Row(
+        children: <Widget>[
+          widget.valid_day == null
+              ? Container()
+              : Icon(
+                  Icons.info,
+                  color: Colors.red,
+                ),
+          SizedBox(
+            width: 12.0,
+          ),
+          Text(
+            widget.valid_day == null
+                ? ""
+                : (widget.valid_day - 1).toString() + " days left",
+            style: TextStyle(
+              color: Colors.red,
             ),
           ),
         ],
