@@ -5,11 +5,11 @@ import 'package:client_app/calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import './product_detail.dart';
-import './login.dart';
-import 'api/api.dart';
 
+import './login.dart';
+import './product_detail.dart';
 import '../settings.dart';
+import 'api/api.dart';
 
 final _formKey = GlobalKey<FormState>();
 
@@ -117,11 +117,27 @@ class Home2 extends StatefulWidget {
 }
 
 class _Home2State extends State<Home2> {
+  int dayToMonth(int day) {
+    switch (day) {
+      case 30:
+        return 1;
+      case 90:
+        return 3;
+      case 365:
+        return 12;
+    }
+    return 0;
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     DateTime now = DateTime.now();
-    DateTime day2later = DateTime(now.year, now.month, now.day + 5);
-    print(day2later);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -204,7 +220,6 @@ class _Home2State extends State<Home2> {
                     itemBuilder: (context, index) {
                       final subscription =
                           subscriptions[index]['subscriptionInfo'][0];
-
                       final DateTime validUntil =
                           DateTime.parse(subscriptions[index]["valid_until"]);
 
@@ -265,8 +280,8 @@ class _Home2State extends State<Home2> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) =>
-                                          ProductDetailPage(subscription)),
+                                      builder: (context) => ProductDetailPage(
+                                          subscription, dayLeft)),
                                 );
                               },
                               style: ElevatedButton.styleFrom(
@@ -297,6 +312,56 @@ class _Home2State extends State<Home2> {
               fixedSize: const Size(60, 60),
               shape: const CircleBorder(),
             ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("Total Cost : "),
+              Subscription(
+                  options: SubscriptionOptions(
+                    document: GetSubscriptions(GetStorage().read("userID")),
+                  ),
+                  builder: (QueryResult result,
+                      {VoidCallback? refetch, FetchMore? fetchMore}) {
+                    if (result.hasException) {
+                      return Text(result.exception.toString());
+                    }
+
+                    if (result.isLoading) {
+                      return Center(child: const Text('Loading'));
+                    }
+                    List subscriptions = result.data?['subscriptions'];
+                    double sum = 0;
+                    for (var subscription in subscriptions) {
+                      final DateTime created =
+                          DateTime.parse(subscription["created_at"]);
+
+                      final DateTime validUntil =
+                          DateTime.parse(subscription["valid_until"]);
+                      final dayLeft =
+                          validUntil.difference(DateTime.now()).inDays;
+
+                      if (dayLeft > 0) {
+                        final int month_Created = created.month;
+                        final int valid_until_month = validUntil.month;
+
+                        final month = (valid_until_month - month_Created) % 12;
+
+                        final price = subscription['subscriptionInfo'][0]
+                                ["price"] *
+                            month;
+                        sum = sum + price;
+                      }
+                    }
+
+                    return Text(
+                      sum.toString(),
+                    );
+                  }),
+            ],
           ),
         ),
       ],

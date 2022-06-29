@@ -74,8 +74,8 @@ class _AllSubscriptionsState extends State<AllSubscriptions> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            ProductDetailPage(subscription)),
+                                        builder: (context) => ProductDetailPage(
+                                            subscription, null)),
                                   );
                                 },
                                 child: Text("Details")),
