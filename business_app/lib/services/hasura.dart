@@ -87,7 +87,7 @@ query GetBusinessInfo {
 """);
 }
 
-Future<Map<String, dynamic>?> GetUserData(String? email) async {
+GetUserData(String? email) async {
   try {
     var queryString = """
               query MyQuery {
@@ -111,4 +111,18 @@ Future<Map<String, dynamic>?> GetUserData(String? email) async {
   } on Exception catch (_) {
     return null;
   }
+}
+
+UpdateBusinessData(
+    typeID, contact, address, details, name, price, serviceType) async {
+  var queryString = """
+mutation UpdateBusinessData {
+  update_type(where: {id: {_eq: $typeID}}, _set: {address: "$address", contact: "$contact", details: "$details", name: "$name", price: "$price", serviceType: "$serviceType"}){
+    affected_rows
+  }
+}
+          """;
+  return await graphQLClient.query(QueryOptions(
+    document: gql(queryString),
+  ));
 }

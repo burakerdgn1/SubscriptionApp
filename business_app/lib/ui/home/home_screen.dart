@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
@@ -23,7 +25,7 @@ class HomeScreen extends StatefulWidget {
   State createState() => _HomeState();
 }
 
-class _HomeState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeState extends State<HomeScreen> with TickerProviderStateMixin {
   late User user;
 
   late TabController _tabController;
@@ -63,7 +65,7 @@ class _HomeState extends State<HomeScreen> with SingleTickerProviderStateMixin {
             children: [
               const DrawerHeader(
                 child: Text(
-                  'Drawer Header',
+                  'SubApp',
                   style: TextStyle(color: Colors.white),
                 ),
                 decoration: BoxDecoration(
@@ -165,18 +167,59 @@ class _HomeState extends State<HomeScreen> with SingleTickerProviderStateMixin {
                               Column(
                                 children: [
                                   ElevatedButton(
-                                      onPressed: () {},
-                                      child: const Text("Add New Customer")),
+                                    child: const Text("Add New Customer"),
+                                    onPressed: () {
+                                      showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              scrollable: true,
+                                              title: const Text(
+                                                  'Add New Customer Form'),
+                                              content: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Form(
+                                                  child: Column(
+                                                    children: <Widget>[
+                                                      TextFormField(
+                                                        decoration:
+                                                            const InputDecoration(
+                                                          labelText:
+                                                              'Customer Name',
+                                                          icon: Icon(Icons
+                                                              .account_box),
+                                                        ),
+                                                      ),
+                                                      TextFormField(
+                                                        decoration:
+                                                            const InputDecoration(
+                                                          labelText:
+                                                              'Customer ID',
+                                                          icon: Icon(
+                                                              Icons.message),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              actions: [
+                                                RaisedButton(
+                                                    child: const Text(
+                                                        "Send Invation"),
+                                                    onPressed: () {
+                                                      // your code
+                                                    })
+                                              ],
+                                            );
+                                          });
+                                    },
+                                  ),
                                   customerList(),
                                 ],
                               ),
-                              Container(
-                                color: Colors.yellow,
-                                child: Column(children: [
-                                  const Text("1"),
-                                  const Text("1"),
-                                ]),
-                              ),
+                              EditBusinessForm(user: user, context: context),
                               StatisticsTab(user: user),
                             ],
                           ),
@@ -253,6 +296,128 @@ class _HomeState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   }
 }
 
+EditBusinessForm({required User user, required BuildContext context}) {
+  final _formKey = GlobalKey<FormState>();
+
+  TextEditingController businessName = TextEditingController();
+  TextEditingController serviceType = TextEditingController();
+  TextEditingController price = TextEditingController();
+  TextEditingController address = TextEditingController();
+  TextEditingController details = TextEditingController();
+  TextEditingController contact = TextEditingController();
+
+  return Query(
+      options: QueryOptions(
+        document: GetBusinessInfo(user.ownerOfType),
+      ),
+      builder: (QueryResult result,
+          {VoidCallback? refetch, FetchMore? fetchMore}) {
+        if (result.hasException) {
+          return Text(result.exception.toString());
+        }
+        if (result.isLoading) {
+          return const Text('Loading');
+        }
+        var data = result.data?['type'][0];
+        businessName.text = data['name'].toString();
+        serviceType.text = data['serviceType'].toString();
+        price.text = data['price'].toString();
+        address.text = data['address'].toString();
+        details.text = data['details'].toString();
+        contact.text = data['contact'].toString();
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: <Widget>[
+                Column(children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Form(
+                      child: Column(
+                        children: <Widget>[
+                          TextFormField(
+                            controller: businessName,
+                            decoration: const InputDecoration(
+                              labelText: 'Business Name',
+                              icon: Icon(Icons.account_box),
+                            ),
+                          ),
+                          TextFormField(
+                            controller: price,
+                            decoration: const InputDecoration(
+                              labelText: 'Price',
+                              icon: Icon(Icons.money),
+                            ),
+                          ),
+                          TextFormField(
+                            controller: serviceType,
+                            decoration: const InputDecoration(
+                              labelText: 'Service Type',
+                              icon: Icon(Icons.room_service),
+                            ),
+                          ),
+                          TextFormField(
+                            controller: address,
+                            decoration: const InputDecoration(
+                              labelText: 'Address',
+                              icon: Icon(Icons.location_city),
+                            ),
+                          ),
+                          TextFormField(
+                            controller: details,
+                            decoration: const InputDecoration(
+                              labelText: 'Details',
+                              icon: Icon(Icons.details),
+                            ),
+                          ),
+                          TextFormField(
+                            controller: contact,
+                            decoration: const InputDecoration(
+                              labelText: 'Contact',
+                              icon: Icon(Icons.mail),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Container(
+                              child: ElevatedButton(
+                                child: const Text("Save"),
+                                onPressed: () async {
+                                  if (_formKey.currentState!.validate()) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text('Processing Data')),
+                                    );
+                                    var result = await UpdateBusinessData(
+                                        user.ownerOfType,
+                                        contact.text,
+                                        address.text,
+                                        details.text,
+                                        businessName.text,
+                                        price.text,
+                                        serviceType.text);
+                                    refetch!();
+                                    ScaffoldMessenger.of(context)
+                                        .hideCurrentSnackBar();
+                                  }
+                                },
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ]),
+              ],
+            ),
+          ),
+        );
+      });
+}
+
 class StatisticsTab extends StatelessWidget {
   final User user;
 
@@ -283,7 +448,7 @@ class StatisticsTab extends StatelessWidget {
 
               var expectedRevenueMonthly = price * subscriptionsCount;
 
-              return Text("");
+              return const Text("");
             }));
   }
 }
