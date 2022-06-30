@@ -44,6 +44,49 @@ GetSubscriptions(UserID) {
     """);
 }
 
+GetCustomers(typeID) {
+  return gql("""
+query GetCustomers {
+  subscriptions(where: {type: {_eq: $typeID}}) {
+    user
+    valid_until
+    updated_at
+    type
+    id
+    created_at
+    subtypeinfo {
+      price
+    }
+    user_info {
+      emailAddress
+      registerDate
+      username
+      id
+    }
+  }
+}
+""");
+}
+
+GetBusinessInfo(ID) {
+  return gql("""
+query GetBusinessInfo {
+  type(where: {id: {_eq: $ID}}) {
+    price
+    image_url
+    pricePlan
+    serviceType
+    position
+    name
+    id
+    details
+    contact
+    address
+  }
+}
+""");
+}
+
 Future<Map<String, dynamic>?> GetUserData(String? email) async {
   try {
     var queryString = """

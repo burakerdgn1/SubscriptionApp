@@ -130,28 +130,6 @@ class _LoginScreen extends State<LoginScreen> {
                                 darkMode: isDarkMode(context),
                                 errorColor: Theme.of(context).errorColor)),
                       ),
-
-                      /// forgot password text, navigates user to ResetPasswordScreen
-                      /// and this is only visible when logging with email and password
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16, right: 24),
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: GestureDetector(
-                            onTap: () =>
-                                push(context, const ResetPasswordScreen()),
-                            child: const Text(
-                              'Forgot password?',
-                              style: TextStyle(
-                                  color: Colors.lightBlue,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                  letterSpacing: 1),
-                            ),
-                          ),
-                        ),
-                      ),
-
                       Padding(
                         padding: const EdgeInsets.only(
                             right: 40.0, left: 40.0, top: 40),
@@ -177,18 +155,6 @@ class _LoginScreen extends State<LoginScreen> {
                           onPressed: () => context
                               .read<LoginBloc>()
                               .add(ValidateLoginFieldsEvent(_key)),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(32.0),
-                        child: Center(
-                          child: Text(
-                            'OR',
-                            style: TextStyle(
-                                color: isDarkMode(context)
-                                    ? Colors.white
-                                    : Colors.black),
-                          ),
                         ),
                       ),
                     ],

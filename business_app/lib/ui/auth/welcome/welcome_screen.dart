@@ -45,7 +45,7 @@ class WelcomeScreen extends StatelessWidget {
                     padding: EdgeInsets.only(
                         left: 16, top: 32, right: 16, bottom: 8),
                     child: Text(
-                      'Say Hello To Your New App!',
+                      'Welcome to Business Panel of SubscriptionApp',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: Color(COLOR_PRIMARY),
@@ -56,7 +56,7 @@ class WelcomeScreen extends StatelessWidget {
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
                     child: Text(
-                      'You\'ve just saved a week of development and headaches.',
+                      'You easily can manage your business and customers.',
                       style: TextStyle(fontSize: 18),
                       textAlign: TextAlign.center,
                     ),
@@ -64,49 +64,56 @@ class WelcomeScreen extends StatelessWidget {
                   Padding(
                     padding:
                         const EdgeInsets.only(right: 40.0, left: 40.0, top: 40),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        primary: const Color(COLOR_PRIMARY),
-                        textStyle: const TextStyle(color: Colors.white),
-                        padding: const EdgeInsets.only(top: 12, bottom: 12),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25.0),
-                            side:
-                                const BorderSide(color: Color(COLOR_PRIMARY))),
+                    child: SizedBox(
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          primary: const Color(COLOR_PRIMARY),
+                          textStyle: const TextStyle(color: Colors.white),
+                          padding: const EdgeInsets.only(top: 12, bottom: 12),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25.0),
+                              side: const BorderSide(
+                                  color: Color(COLOR_PRIMARY))),
+                        ),
+                        child: const Text(
+                          'Log In',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () {
+                          context.read<WelcomeBloc>().add(LoginPressed());
+                        },
                       ),
-                      child: const Text(
-                        'Log In',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      onPressed: () {
-                        context.read<WelcomeBloc>().add(LoginPressed());
-                      },
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(
                         right: 40.0, left: 40.0, top: 20, bottom: 20),
-                    child: TextButton(
-                      child: const Text(
-                        'Sign Up',
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(COLOR_PRIMARY)),
-                      ),
-                      onPressed: () {
-                        context.read<WelcomeBloc>().add(SignupPressed());
-                      },
-                      style: ButtonStyle(
-                        padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                          const EdgeInsets.only(top: 12, bottom: 12),
+                    child: SizedBox(
+                      height: 50,
+                      child: TextButton(
+                        child: const Text(
+                          'Sign Up',
+                          style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(COLOR_PRIMARY)),
                         ),
-                        shape: MaterialStateProperty.all<OutlinedBorder>(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25.0),
-                            side: const BorderSide(
-                              color: Color(COLOR_PRIMARY),
+                        onPressed: () {
+                          context.read<WelcomeBloc>().add(SignupPressed());
+                        },
+                        style: ButtonStyle(
+                          padding:
+                              MaterialStateProperty.all<EdgeInsetsGeometry>(
+                            const EdgeInsets.only(top: 12, bottom: 12),
+                          ),
+                          shape: MaterialStateProperty.all<OutlinedBorder>(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25.0),
+                              side: const BorderSide(
+                                color: Color(COLOR_PRIMARY),
+                              ),
                             ),
                           ),
                         ),

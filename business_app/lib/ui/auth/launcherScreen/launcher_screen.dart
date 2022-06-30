@@ -7,6 +7,8 @@ import 'package:project_management/ui/auth/onBoarding/on_boarding_screen.dart';
 import 'package:project_management/ui/auth/welcome/welcome_screen.dart';
 import 'package:project_management/ui/home/home_screen.dart';
 
+import '../../../model/user.dart';
+
 class LauncherScreen extends StatefulWidget {
   const LauncherScreen({Key? key}) : super(key: key);
 
@@ -35,7 +37,8 @@ class _LauncherScreenState extends State<LauncherScreen> {
               pushReplacement(context, HomeScreen(user: state.user!));
               break;
             case AuthState.unauthenticated:
-              pushReplacement(context, const WelcomeScreen());
+              //pushReplacement(context, const WelcomeScreen());
+              pushReplacement(context, HomeScreen(user: User()));
               break;
           }
         },

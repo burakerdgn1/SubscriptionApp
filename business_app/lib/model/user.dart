@@ -9,13 +9,16 @@ class User {
 
   String registerDate;
 
+  String ownerOfType;
+
   String appIdentifier;
 
   User(
       {this.email = '',
       this.username = '',
       this.userID = '',
-      this.registerDate = ''})
+      this.registerDate = '',
+      this.ownerOfType = ''})
       : appIdentifier = 'Flutter Login Screen';
 
   String fullName() => username;
@@ -25,7 +28,8 @@ class User {
         email: parsedJson['emailAddress'] ?? '',
         username: parsedJson['username'] ?? '',
         userID: parsedJson['id'].toString(),
-        registerDate: parsedJson['registerDate'] ?? '');
+        registerDate: parsedJson['registerDate'] ?? '',
+        ownerOfType: parsedJson['ownerOfType'] ?? '');
   }
 
   Map<String, dynamic> toJson() {
@@ -34,6 +38,7 @@ class User {
       'username': username,
       'id': userID,
       'registerDate': registerDate,
+      'ownerOfType': ownerOfType,
       'appIdentifier': appIdentifier
     };
   }

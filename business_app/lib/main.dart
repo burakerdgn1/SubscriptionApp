@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:project_management/services/hasura.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,7 +18,7 @@ void main() async {
       RepositoryProvider(create: (_) => AuthenticationBloc()),
       RepositoryProvider(create: (_) => LoadingCubit()),
     ],
-    child: const MyApp(),
+    child: GraphQLProvider(client: client, child: const MyApp()),
   ));
 }
 
