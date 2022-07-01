@@ -166,7 +166,7 @@ class _HomeState extends State<HomeScreen> with TickerProviderStateMixin {
                             children: <Widget>[
                               Column(
                                 children: [
-                                  ElevatedButton(
+                                  /* ElevatedButton(
                                     child: const Text("Add New Customer"),
                                     onPressed: () {
                                       showDialog(
@@ -215,6 +215,10 @@ class _HomeState extends State<HomeScreen> with TickerProviderStateMixin {
                                             );
                                           });
                                     },
+                                  ), */
+                                  Text(
+                                    "Your Customers",
+                                    style: TextStyle(fontSize: 35),
                                   ),
                                   customerList(),
                                 ],
@@ -256,6 +260,8 @@ class _HomeState extends State<HomeScreen> with TickerProviderStateMixin {
               itemCount: subscriptions.length,
               itemBuilder: (context, index) {
                 final userInfo = subscriptions[index]['user_info'];
+                final subInfo = subscriptions[index];
+                final subtypeinfo = subscriptions[index]['subtypeinfo'];
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
@@ -280,7 +286,46 @@ class _HomeState extends State<HomeScreen> with TickerProviderStateMixin {
                           'i',
                           style: TextStyle(fontSize: 20),
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  scrollable: true,
+                                  title: const Text('Customer Information'),
+                                  content: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      children: <Widget>[
+                                        TextInfo(
+                                            "Username:", userInfo['username']),
+                                        TextInfo("E-Mail:",
+                                            userInfo['emailAddress']),
+                                        TextInfo("Register Date:",
+                                            userInfo['registerDate']),
+                                        TextInfo(
+                                            "Subscription Price:",
+                                            "\$" +
+                                                subtypeinfo['price']
+                                                    .toString()),
+                                        TextInfo(
+                                            "Subscription Valid Until:",
+                                            subInfo['valid_until']
+                                                .toString()
+                                                .split("T")[0]),
+                                      ],
+                                    ),
+                                  ),
+                                  actions: [
+                                    RaisedButton(
+                                        child: const Text("Close"),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        })
+                                  ],
+                                );
+                              });
+                        },
                         style: ElevatedButton.styleFrom(
                           fixedSize: const Size(40, 40),
                           shape: const CircleBorder(),
@@ -337,6 +382,10 @@ EditBusinessForm({required User user, required BuildContext context}) {
                     child: Form(
                       child: Column(
                         children: <Widget>[
+                          Text(
+                            "Edit Your Business",
+                            style: TextStyle(fontSize: 35),
+                          ),
                           TextFormField(
                             controller: businessName,
                             decoration: const InputDecoration(
@@ -418,6 +467,20 @@ EditBusinessForm({required User user, required BuildContext context}) {
       });
 }
 
+TextInfo(label, text) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    children: [
+      Expanded(
+          child: Text(label, style: TextStyle(fontWeight: FontWeight.bold))),
+      Padding(
+        padding: const EdgeInsets.only(left: 5),
+        child: Expanded(child: Text(text)),
+      )
+    ],
+  );
+}
+
 class StatisticsTab extends StatelessWidget {
   final User user;
 
@@ -429,7 +492,6 @@ class StatisticsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        color: Colors.yellow,
         child: Query(
             options: QueryOptions(
               document: GetCustomers(user.ownerOfType),
@@ -448,7 +510,21 @@ class StatisticsTab extends StatelessWidget {
 
               var expectedRevenueMonthly = price * subscriptionsCount;
 
-              return const Text("");
+              return Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: SizedBox(
+                    width: 500,
+                    child: Column(
+                      children: [
+                        Text("Statistics of Your Business",
+                            style: TextStyle(fontSize: 35)),
+                        TextInfo(
+                            "Total Customers", subscriptionsCount.toString()),
+                        TextInfo("Expected Revenue",
+                            "\$" + expectedRevenueMonthly.toString()),
+                      ],
+                    )),
+              );
             }));
   }
 }
