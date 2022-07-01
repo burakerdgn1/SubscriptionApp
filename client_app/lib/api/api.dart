@@ -25,7 +25,8 @@ ValueNotifier<GraphQLClient> client = ValueNotifier(
   graphQLClient,
 );
 
-String staticSubscriptions = """
+String staticSubscriptions =
+    """
   query staticSubscriptions {
     type {
       id
@@ -37,8 +38,57 @@ String staticSubscriptions = """
 """;
 
 // --- Functions ---
+
+GetUser(id) {
+  return gql(
+      """
+    query getUsers (\$id:Int){
+      users(where: {id:{_eq:\$id}}){
+        id
+        username
+        password
+        emailAddress
+      }
+    }
+    """);
+}
+
+UpdatePassword(id, String password) async {
+  FirebaseUser user = await FirebaseAuth.instance.currentUser();
+
+  user?.updatePassword(password).then((_) {
+    print("Successfully changed password");
+  }).catchError((error) {
+    print("Password can't be changed" + error.toString());
+    //This might happen, when the wrong password is in, the user isn't found, or if the user hasn't logged in recently.
+  });
+
+  String update =
+      '''
+  mutation updateUsers(\$id: Int, \$password:String){
+    action: update_users(where:{id:{_eq:\$id}}, _set:{password:\$password}){
+      returning{
+        id
+        password
+      }
+    }
+
+  }
+  ''';
+  final variable = {"id": id, "password": password};
+
+  QueryResult result = await graphQLClient
+      .query(QueryOptions(document: gql(update), variables: variable));
+  if (!result.hasException) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 GetSubscriptions(UserID) {
-  return gql("""
+  return gql(
+      """
       query GetSubscriptions {
       subscriptions(where: {user: {_eq: $UserID}}) {
           id
@@ -59,6 +109,60 @@ GetSubscriptions(UserID) {
     """);
 }
 
+//for user with Id
+GetSubscriptionList(UserID) async {
+  var queryString = gql(
+      """
+      query GetSubscriptions {
+      subscriptions(where: {user: {_eq: $UserID}}) {
+          id
+          created_at
+          valid_until
+          subscriptionInfo {
+            id
+            image_url
+            name
+            price
+            serviceType
+            address
+            details
+            contact
+          }
+        }
+      }
+    """);
+  QueryResult result =
+      await graphQLClient.query(QueryOptions(document: queryString));
+
+  List subscriptions = result.data?['subscriptions'];
+  List subscriptionlistID = [];
+  for (var i = 0; i < subscriptions.length; i++) {
+    final subscription = subscriptions[i]['subscriptionInfo'][0];
+    subscriptionlistID.add(subscription["id"]);
+  }
+
+  return subscriptionlistID;
+}
+
+getAllSubscriptions() {
+  return gql(
+      """
+     query {
+      type {
+        id
+        image_url
+        name
+        price
+        serviceType
+        address
+        details
+        contact
+      }
+     }
+
+ """);
+}
+
 Future<String> CheckSubscriptionValidationString(String? data) async {
   try {
     List<String>? splitData = data?.split(":");
@@ -66,7 +170,8 @@ Future<String> CheckSubscriptionValidationString(String? data) async {
       String subID = splitData[0];
       String userID = splitData[1];
 
-      var queryString = """
+      var queryString =
+          """
           query MyQuery {
             subscriptions(where: {id: {_eq: $subID}, user: {_eq: $userID}}, limit: 1) {
               id
@@ -93,7 +198,8 @@ Future<String> CheckSubscriptionValidationString(String? data) async {
 
 Future<Object> CheckSubscriptionValidation(String subID, String userID) async {
   try {
-    var queryString = """
+    var queryString =
+        """
             query MyQuery {
               subscriptions(where: {id: {_eq: $subID}, user: {_eq: $userID}}, limit: 1) {
                 id
@@ -120,12 +226,12 @@ Future<Object> CheckSubscriptionValidation(String subID, String userID) async {
   }
 }
 
-RegisterUser(email, username, password) async {
+RegisterUser(emailAddress, username, password) async {
   FirebaseAuth auth = FirebaseAuth.instance;
   FirebaseUser? user;
   try {
     var userCredential = await auth.createUserWithEmailAndPassword(
-      email: email,
+      email: emailAddress,
       password: password,
     );
     user = userCredential.user;
@@ -145,35 +251,49 @@ RegisterUser(email, username, password) async {
     log(e.toString());
   }
 
+  print(user);
+
   if (user != null) {
-    var queryString = """
-            mutation RegisterUser {
-              insert_users(object: {emailAddress: "$email", password: "$password", username: "$username"}) {
+    var queryString =
+        """
+            mutation insert_users(\$username: String,\$emailAddress:String, \$password: String){
+              action: insert_users(objects: {username: \$username,emailAddress:\$emailAddress,password:\$password}) {
                 returning {
                     id
                   }
               }
             }
           """;
-    return await graphQLClient.query(QueryOptions(
+    final variable = {
+      "username": username,
+      "password": password,
+      "emailAddress": emailAddress
+    };
+    QueryResult result = await graphQLClient.query(QueryOptions(
       document: gql(queryString),
+      variables: variable,
     ));
+
+    return user == null ? false : true;
   }
 }
 
-AddNewSubscription(UserID, ValidUntil, SubType) async {
-  var queryString = """
-                    mutation AddNewSubscription {
-                      insert_subscriptions(objects: {user: "$UserID", valid_until: "$ValidUntil", type: "$SubType"}){
+AddNewSubscription(user, type, valid_until) async {
+  String queryString =
+      """
+                    mutation insert_subscriptions(\$type:Int, \$user: Int, \$valid_until:timestamp) {
+                      action: insert_subscriptions(objects: {user: \$user, type: \$type, valid_until: \$valid_until}){
                         returning {
-                          id
+                          user
                         }
                       }
                     }
           """;
-  return await graphQLClient.query(QueryOptions(
-    document: gql(queryString),
-  ));
+  final variable = {"user": user, "type": type, "valid_until": valid_until};
+
+  final QueryResult result = await graphQLClient
+      .query(QueryOptions(document: gql(queryString), variables: variable));
+  print(result.exception);
 }
 
 Future<bool> Login(String email, String password) async {
@@ -186,7 +306,8 @@ Future<bool> Login(String email, String password) async {
             .user;
     log("Found User: " + user.email);
     var emailAddress = user.email;
-    var queryString = """
+    var queryString =
+        """
               query MyQuery {
                 users(where: {emailAddress: {_eq: "$email"}}) {
                   registerDate

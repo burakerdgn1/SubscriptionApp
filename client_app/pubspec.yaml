@@ -33,7 +33,7 @@ dependencies:
   graphql_flutter:
   qr_flutter: ^4.0.0
   camera:
-  qr_code_scanner:
+  qr_code_scanner: ^1.0.0
   firebase_core: ^0.4.0+9
   firebase_auth: ^0.14.0+5
   cloud_firestore: ^0.12.9+5
