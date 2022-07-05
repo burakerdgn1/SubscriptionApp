@@ -1,8 +1,5 @@
-// ignore: import_of_legacy_library_into_null_safe
-// ignore_for_file: non_constant_identifier_names
-
-import 'dart:convert';
 import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
@@ -25,8 +22,7 @@ ValueNotifier<GraphQLClient> client = ValueNotifier(
   graphQLClient,
 );
 
-String staticSubscriptions =
-    """
+String staticSubscriptions = """
   query staticSubscriptions {
     type {
       id
@@ -40,8 +36,7 @@ String staticSubscriptions =
 // --- Functions ---
 
 GetUser(id) {
-  return gql(
-      """
+  return gql("""
     query getUsers (\$id:Int){
       users(where: {id:{_eq:\$id}}){
         id
@@ -63,8 +58,7 @@ UpdatePassword(id, String password) async {
     //This might happen, when the wrong password is in, the user isn't found, or if the user hasn't logged in recently.
   });
 
-  String update =
-      '''
+  String update = '''
   mutation updateUsers(\$id: Int, \$password:String){
     action: update_users(where:{id:{_eq:\$id}}, _set:{password:\$password}){
       returning{
@@ -87,8 +81,7 @@ UpdatePassword(id, String password) async {
 }
 
 GetSubscriptions(UserID) {
-  return gql(
-      """
+  return gql("""
       query GetSubscriptions {
       subscriptions(where: {user: {_eq: $UserID}}) {
           id
@@ -103,16 +96,52 @@ GetSubscriptions(UserID) {
             address
             details
             contact
+            position
           }
         }
       }
     """);
 }
 
+AddNewSubscription(user, type, valid_until) async {
+  String queryString = """
+                    mutation insert_subscriptions(\$type:Int, \$user: Int, \$valid_until:timestamp) {
+                      action: insert_subscriptions(objects: {user: \$user, type: \$type, valid_until: \$valid_until}){
+                        returning {
+                          user
+                        }
+                      }
+                    }
+          """;
+  final variable = {"user": user, "type": type, "valid_until": valid_until};
+
+  final result = await graphQLClient
+      .mutate(MutationOptions(document: gql(queryString), variables: variable));
+
+  print(result.exception);
+}
+
+//unsubscribe with type id
+Unsubscribe(user, type) async {
+  String queryString = """
+                    mutation delete_subscriptions(\$type:Int, \$user: Int) {
+                       delete_subscriptions(where:  {user: {_eq: $user}, type: {_eq: $type}}) {
+                        returning {
+                         
+                        }
+                      }
+                    }
+          """;
+  final variable = {"user": user, "type": type};
+
+  final result =
+      await graphQLClient.mutate(MutationOptions(document: gql(queryString)));
+  print(result.exception);
+}
+
 //for user with Id
 GetSubscriptionList(UserID) async {
-  var queryString = gql(
-      """
+  var queryString = gql("""
       query GetSubscriptions {
       subscriptions(where: {user: {_eq: $UserID}}) {
           id
@@ -145,8 +174,7 @@ GetSubscriptionList(UserID) async {
 }
 
 getAllSubscriptions() {
-  return gql(
-      """
+  return gql("""
      query {
       type {
         id
@@ -157,6 +185,7 @@ getAllSubscriptions() {
         address
         details
         contact
+        position
       }
      }
 
@@ -170,8 +199,7 @@ Future<String> CheckSubscriptionValidationString(String? data) async {
       String subID = splitData[0];
       String userID = splitData[1];
 
-      var queryString =
-          """
+      var queryString = """
           query MyQuery {
             subscriptions(where: {id: {_eq: $subID}, user: {_eq: $userID}}, limit: 1) {
               id
@@ -198,8 +226,7 @@ Future<String> CheckSubscriptionValidationString(String? data) async {
 
 Future<Object> CheckSubscriptionValidation(String subID, String userID) async {
   try {
-    var queryString =
-        """
+    var queryString = """
             query MyQuery {
               subscriptions(where: {id: {_eq: $subID}, user: {_eq: $userID}}, limit: 1) {
                 id
@@ -254,8 +281,7 @@ RegisterUser(emailAddress, username, password) async {
   print(user);
 
   if (user != null) {
-    var queryString =
-        """
+    var queryString = """
             mutation insert_users(\$username: String,\$emailAddress:String, \$password: String){
               action: insert_users(objects: {username: \$username,emailAddress:\$emailAddress,password:\$password}) {
                 returning {
@@ -278,24 +304,6 @@ RegisterUser(emailAddress, username, password) async {
   }
 }
 
-AddNewSubscription(user, type, valid_until) async {
-  String queryString =
-      """
-                    mutation insert_subscriptions(\$type:Int, \$user: Int, \$valid_until:timestamp) {
-                      action: insert_subscriptions(objects: {user: \$user, type: \$type, valid_until: \$valid_until}){
-                        returning {
-                          user
-                        }
-                      }
-                    }
-          """;
-  final variable = {"user": user, "type": type, "valid_until": valid_until};
-
-  final QueryResult result = await graphQLClient
-      .query(QueryOptions(document: gql(queryString), variables: variable));
-  print(result.exception);
-}
-
 Future<bool> Login(String email, String password) async {
   try {
     final FirebaseUser user =
@@ -306,8 +314,7 @@ Future<bool> Login(String email, String password) async {
             .user;
     log("Found User: " + user.email);
     var emailAddress = user.email;
-    var queryString =
-        """
+    var queryString = """
               query MyQuery {
                 users(where: {emailAddress: {_eq: "$email"}}) {
                   registerDate

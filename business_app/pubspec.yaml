@@ -50,6 +50,7 @@ dependencies:
   url_launcher: ^6.1.3
   graphql_flutter: ^5.1.0
   get_storage: ^2.0.3
+  dcdg: ^4.0.1
 
 dev_dependencies:
   flutter_lints: ^1.0.0

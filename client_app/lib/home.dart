@@ -3,8 +3,11 @@
 import 'package:client_app/all_subscriptions.dart';
 import 'package:client_app/calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:tuple/tuple.dart';
 
 import './login.dart';
 import './product_detail.dart';
@@ -89,8 +92,8 @@ class _TestState extends State<HomePage> {
             backgroundColor: Colors.blue,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.cancel_presentation_sharp),
-            label: "X",
+            icon: Icon(FontAwesomeIcons.box),
+            label: "--",
             backgroundColor: Colors.blue,
           ),
           BottomNavigationBarItem(
@@ -117,6 +120,35 @@ class Home2 extends StatefulWidget {
 }
 
 class _Home2State extends State<Home2> {
+  late double xP;
+  late double yP;
+  late double sum;
+  void _getCurrentLocation() async {
+    final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    setState(() {
+      xP = position.latitude;
+      yP = position.longitude;
+    });
+  }
+
+  double calculateDistance(lat1, lon1, lat2, lon2) {
+    return (Geolocator.distanceBetween(lat1, lon1, lat2, lon2) / 1000);
+  }
+
+  String format(double n) {
+    return n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 2);
+  }
+
+  Tuple2<double, double> stringToPosition(String str) {
+    var splittedStr = str.split(",");
+    double xPosition = double.parse(splittedStr[0]);
+    double yPosition = double.parse(splittedStr[1]);
+    var result = Tuple2<double, double>(xPosition, yPosition);
+    return result;
+  }
+
   int dayToMonth(int day) {
     switch (day) {
       case 30:
@@ -132,7 +164,14 @@ class _Home2State extends State<Home2> {
   @override
   void initState() {
     // TODO: implement initState
+
+    _getCurrentLocation();
+    sum = 0;
     super.initState();
+  }
+
+  String _format(double n) {
+    return n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 2);
   }
 
   @override
@@ -226,6 +265,8 @@ class _Home2State extends State<Home2> {
                       final dayLeft =
                           validUntil.difference(DateTime.now()).inDays;
 
+                      Tuple2 location =
+                          stringToPosition(subscription['position']);
                       return Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: Row(
@@ -268,6 +309,15 @@ class _Home2State extends State<Home2> {
                                 children: [
                                   Text(subscription['name']),
                                   Text(subscription['serviceType']),
+                                  SizedBox(
+                                    height: 5,
+                                  ),
+                                  Text(
+                                    format(calculateDistance(xP, yP,
+                                            location.item1, location.item2)) +
+                                        " km away",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
                                 ],
                               ),
                             ),
@@ -334,7 +384,7 @@ class _Home2State extends State<Home2> {
                       return Center(child: const Text('Loading'));
                     }
                     List subscriptions = result.data?['subscriptions'];
-                    double sum = 0;
+
                     for (var subscription in subscriptions) {
                       final DateTime created =
                           DateTime.parse(subscription["created_at"]);
@@ -348,7 +398,13 @@ class _Home2State extends State<Home2> {
                         final int month_Created = created.month;
                         final int valid_until_month = validUntil.month;
 
-                        final month = (valid_until_month - month_Created) % 12;
+                        final month =
+                            (valid_until_month - month_Created) % 12 == 0
+                                ? 12
+                                : (valid_until_month - month_Created);
+
+                        print("MONTHS");
+                        print(month);
 
                         final price = subscription['subscriptionInfo'][0]
                                 ["price"] *
@@ -358,7 +414,7 @@ class _Home2State extends State<Home2> {
                     }
 
                     return Text(
-                      sum.toString(),
+                      _format(sum),
                     );
                   }),
             ],

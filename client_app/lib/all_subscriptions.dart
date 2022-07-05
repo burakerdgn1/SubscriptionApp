@@ -1,10 +1,11 @@
 import 'package:client_app/api/api.dart';
 import 'package:client_app/home.dart';
 import 'package:client_app/product_detail.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:tuple/tuple.dart';
 
 class AllSubscriptions extends StatefulWidget {
   const AllSubscriptions({Key? key}) : super(key: key);
@@ -14,6 +15,41 @@ class AllSubscriptions extends StatefulWidget {
 }
 
 class _AllSubscriptionsState extends State<AllSubscriptions> {
+  late double xP;
+  late double yP;
+  void _getCurrentLocation() async {
+    final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    setState(() {
+      xP = position.latitude;
+      yP = position.longitude;
+    });
+  }
+
+  double calculateDistance(lat1, lon1, lat2, lon2) {
+    return (Geolocator.distanceBetween(lat1, lon1, lat2, lon2) / 1000);
+  }
+
+  String format(double n) {
+    return n.toStringAsFixed(n.truncateToDouble() == n ? 0 : 2);
+  }
+
+  Tuple2<double, double> stringToPosition(String str) {
+    var splittedStr = str.split(",");
+    double xPosition = double.parse(splittedStr[0]);
+    double yPosition = double.parse(splittedStr[1]);
+    var result = Tuple2<double, double>(xPosition, yPosition);
+    return result;
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _getCurrentLocation();
+  }
+
   @override
   Widget build(BuildContext context) {
     DateTime now = DateTime.now();
@@ -49,6 +85,9 @@ class _AllSubscriptionsState extends State<AllSubscriptions> {
               itemCount: subscriptions.length,
               itemBuilder: (context, index) {
                 final subscription = subscriptions[index];
+
+                Tuple2 location = stringToPosition(subscription['position']);
+
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
@@ -69,6 +108,12 @@ class _AllSubscriptionsState extends State<AllSubscriptions> {
                           children: [
                             Text(subscription['name']),
                             Text(subscription['serviceType']),
+                            SizedBox(
+                              height: 5,
+                            ),
+                            Text(format(calculateDistance(
+                                    xP, yP, location.item1, location.item2)) +
+                                " km away"),
                             TextButton(
                                 onPressed: () {
                                   Navigator.push(
@@ -101,7 +146,7 @@ class _AllSubscriptionsState extends State<AllSubscriptions> {
                                     Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                            builder: (context) => HomePage()));
+                                            builder: (context) => const HomePage()));
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(

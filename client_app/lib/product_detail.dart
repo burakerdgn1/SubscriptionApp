@@ -1,8 +1,14 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, prefer_const_constructors_in_immutables
 
+import 'package:client_app/api/api.dart';
+import 'package:client_app/home.dart';
 import 'package:client_app/qrcodepage.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:tuple/tuple.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'functions/qr_funcs.dart';
 
@@ -79,6 +85,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 _buildDivider(screenSize),
                 SizedBox(height: 4.0),
                 _buildStyleNoteData(),
+                SizedBox(height: 20.0),
+                _buildSeeLocation(),
+                SizedBox(height: 20.0),
+                _unsubscribe(),
                 SizedBox(height: 20.0),
               ],
             ),
@@ -336,5 +346,137 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         ),
       ),
     );
+  }
+
+  _buildSeeLocation() {
+    return ButtonTheme(
+        minWidth: double.infinity,
+        height: 50.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18.0),
+        ),
+        child: MaterialButton(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          color: Colors.lightGreen,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                FontAwesomeIcons.mapLocationDot,
+                color: Colors.white,
+              ),
+              SizedBox(
+                width: 20,
+              ),
+              Text(
+                "See Location on Map",
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+          onPressed: () async {
+            Tuple2 loc = positionFormat(widget.subscription["position"]);
+            // "https://www.google.com/maps/search/?api=1&query=${loc.item1},${loc.item2}";
+            var url =
+                "www.google.com/maps/search/?api=1&query=${loc.item1},${loc.item2}";
+
+            final Uri toLaunch = Uri(
+              scheme: 'https',
+              path: url,
+            );
+            navigateTo(loc.item1, loc.item2);
+          },
+        ));
+  }
+
+  static void navigateTo(double lat, double lng) async {
+    var uri = Uri.parse("google.navigation:q=$lat,$lng&mode=d");
+    if (await canLaunch(uri.toString())) {
+      await launch(uri.toString());
+    } else {
+      throw 'Could not launch ${uri.toString()}';
+    }
+  }
+
+  Tuple2 positionFormat(String str) {
+    var splittedStr = str.split(",");
+    double xPosition = double.parse(splittedStr[0]);
+    double yPosition = double.parse(splittedStr[1]);
+    var result = Tuple2(xPosition, yPosition);
+    return result;
+  }
+
+  Widget _unsubscribe() {
+    return widget.valid_day == null
+        ? Container()
+        : ButtonTheme(
+            minWidth: double.infinity,
+            height: 50.0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18.0),
+            ),
+            child: MaterialButton(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              color: Colors.red,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.logout,
+                    color: Colors.white,
+                  ),
+                  SizedBox(
+                    width: 20,
+                  ),
+                  Text(
+                    "Unsubscribe",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                          title: Text('Info'),
+                          content:
+                              Text('Are you sure you want to unsubscribe?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () async {
+                                final user = GetStorage().read("userID");
+                                final type = widget.subscription["id"];
+                                print(user);
+                                print(type);
+                                final QueryResult result =
+                                    await Unsubscribe(user, type);
+
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => HomePage()));
+                              },
+                              child: const Text(
+                                'Unsubscribe',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ));
+              },
+            ));
   }
 }
