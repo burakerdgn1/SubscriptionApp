@@ -8,7 +8,7 @@ Senior project that is a mobile application where people can check their subscri
 
 <img width="277" alt="subscriptions" src="https://github.com/burakerdgn1/SubscriptionApp/assets/61464716/f4aa6ebc-4316-4cbd-8023-85393bd45940"> <img width="274" alt="calendar" src="https://github.com/burakerdgn1/SubscriptionApp/assets/61464716/19d30d57-f4cc-47b3-91b7-ef85cd500ee9">
 
-<img width="277" alt="location" src="https://github.com/burakerdgn1/SubscriptionApp/assets/61464716/50b274fc-05d2-4f0c-88f2-0fdc2caa5935"> <img= width="277" alt="businesslogin" src="https://github.com/burakerdgn1/SubscriptionApp/assets/61464716/9057f592-34de-4d7e-bb90-4575a69cdbc0">
+<img width="277" alt="location" src="https://github.com/burakerdgn1/SubscriptionApp/assets/61464716/50b274fc-05d2-4f0c-88f2-0fdc2caa5935"> <img width="277" alt="businesslogin" src="https://github.com/burakerdgn1/SubscriptionApp/assets/61464716/28fa3f08-526f-4f14-9632-da45655435d4">
 
 <img width="277" alt="businesshome" src="https://github.com/burakerdgn1/SubscriptionApp/assets/61464716/961ef4ce-6ea1-4c2b-a7c8-c426123268fe"> <img width="277" alt="location" src="https://github.com/burakerdgn1/SubscriptionApp/assets/61464716/2ac5136b-5601-4d6f-9e13-5da6fc21ab60">
 
